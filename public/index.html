@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>News Scrape</title>
+</head>
+
+<body>
+
+    <h1>Old York News</h1>
+    <button id="getPosts">Scrape Post</button>
+    <div id="posty"></div>
+    <form>
+        <p>
+            <label for="title">Title</label>
+            <input id="title" type="text">
+        </p>
+        <p>
+            <label for="comment">Comment</label>
+            <input id="comment" type="text">
+        </p>
+        <p>
+            <button id="post">Post</button>
+        </p>
+    </form>
+
+    <script>
+        const { fetch } = window
+
+        document.querySelector('#getPosts').addEventListener('click', e => {
+            fetch('/media')
+                .then(r => r.json())
+                .then(posts => {
+                    //create another fetch call to get data from database. it should be nested so that it would only run after the data has been scraped.
+                    //put this code below inside the .then of the second fetch call
+                    fetch('/media2')
+                        .then(r => r.json())
+                        .then(posts => {
+                            console.log(posts)
+                            posts.forEach(({ title, body, link, commentor }) => {
+                                let mediaDiv = document.createElement('div')
+                                mediaDiv.innerHTML = `
+                    <h2>${title}</h2>
+                    <h3>${body}</h3>
+                    <h4>${link}</h4>
+                    <p>${commentor}</p>
+                    <hr>
+                    `
+                                document.querySelector('#posty').append(mediaDiv)
+                            })
+
+                        })
+                        .catch(e => console.error(e))
+
+                })
+                .catch(e => console.error(e))
+        })
+
+        document.querySelector('#post').addEventListener('click', e => {
+            e.preventDefault()
+            fetch('/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: document.querySelector('#title').value,
+                    body: document.querySelector('#comment').value
+                })
+            })
+                .then(_ => console.log('Post has been added'))
+                .catch(e => console.log(e))
+        })
+    </script>
+
+</body>
+
+</html>
